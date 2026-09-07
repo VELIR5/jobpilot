@@ -3,6 +3,7 @@ node_modules/
 .next-build/
 out/
 data/*.db
+data/JobPilot/
 data/local/
 data/backups/
 data/uploads/
@@ -10,6 +11,10 @@ data/logs/
 .local-logs/
 .env
 .env.local
+.env.production.local
+.jobpilot-release.env
+.jobpilot-deploy-enabled
+.wrangler/
 playwright-report/
 test-results/
 .playwright-cli/

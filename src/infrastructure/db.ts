@@ -2,7 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 const root=process.env.LOCALAPPDATA||path.join(process.cwd(),"data");
-const dir=path.join(root,"JobPilot");mkdirSync(dir,{recursive:true});
+const dir=process.env.JOBPILOT_DATA_DIR||path.join(root,"JobPilot");mkdirSync(dir,{recursive:true});
 const globalDb=globalThis as unknown as {jobpilotDb?:DatabaseSync};
 export const db=globalDb.jobpilotDb??new DatabaseSync(path.join(dir,"jobpilot.db"));
 globalDb.jobpilotDb=db;
