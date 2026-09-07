@@ -22,10 +22,10 @@ export async function POST(req: Request) {
   }
   if (text.trim().length < 20) return Response.json({ error: "没有提取到足够文字；扫描版 PDF 请先进行 OCR" }, { status: 422 });
 
-  const directory = path.join(process.cwd(), "data", "uploads");
+  const directory = process.env.JOBPILOT_UPLOAD_DIR || path.join(process.cwd(), "data", "uploads");
   await mkdir(directory, { recursive: true });
   const resumeId = id();
-  const filePath = path.join(directory, resumeId);
+  const filePath = path.join(/* turbopackIgnore: true */ directory, resumeId);
   await writeFile(filePath, bytes);
   try {
     const parsed = structureResume(text);

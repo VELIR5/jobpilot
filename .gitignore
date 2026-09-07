@@ -14,6 +14,8 @@ data/logs/
 .env.production.local
 .jobpilot-release.env
 .jobpilot-deploy-enabled
+.jobpilot-current-release
+.jobpilot-blocked-sha
 .wrangler/
 playwright-report/
 test-results/

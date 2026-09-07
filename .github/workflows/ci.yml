@@ -13,6 +13,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      JOBPILOT_DATA_DIR: ${{ runner.temp }}/jobpilot-ci-data
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -52,6 +54,9 @@ jobs:
             }
           }
           if ($failed) { exit 1 }
+
+      - name: Initialize isolated build database
+        run: npm run db:push
 
       - name: Build production application
         run: npm run build

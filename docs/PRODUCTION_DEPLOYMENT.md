@@ -17,10 +17,13 @@ to Cloudflare Pages or Workers without first migrating those three facilities.
 4. Only when that exact tip has a successful `push` run of `.github/workflows/ci.yml`
    does the production task release it. Older CI completions cannot downgrade
    production, and non-forward or force-pushed histories are rejected.
-5. The deploy script stops JobPilot, backs up SQLite, installs locked
-   dependencies, builds against an isolated temporary database, applies additive
-   schema initialization to production, and starts the application again.
-6. Both the local origin and `https://job.vcrelay.com/api/health` must report the
+5. The deploy script creates a detached release worktree outside the live
+   checkout, installs locked dependencies, and builds against an isolated
+   temporary database while the old release keeps serving traffic.
+6. It then stops JobPilot, backs up SQLite, applies additive schema
+   initialization, atomically switches the release pointer, and starts the new
+   release.
+7. Both the local origin and `https://job.vcrelay.com/api/health` must report the
    exact SHA. A failed release restores the preceding Git commit and build before
    restarting the task. Database migrations are deliberately not reversed.
 
@@ -42,15 +45,32 @@ logged in after a reboot.
    unattended deployment.
 3. Schedule a short maintenance window and stop the old manually managed
    JobPilot process so that only one process can bind the production port.
-4. From an up-to-date checkout, install both the application and deployment
-   scheduled tasks. The path passed to `DataDir` must contain the existing
-   `jobpilot.db` and must be outside the Git checkout; the installer refuses to
-   create a replacement empty database:
+4. As a one-time bootstrap, fast-forward the production checkout to this
+   deployment-enabled `master`, run `npm ci`, initialize the existing database,
+   and run `npm run build`. This establishes a known-good current release before
+   the poller takes over; never use `git clean` or overwrite the ignored files.
+
+   ```powershell
+   git fetch origin master
+   git checkout master
+   git pull --ff-only origin master
+   npm ci
+   $env:JOBPILOT_DATA_DIR = "C:\Users\<service-user>\AppData\Local\JobPilot"
+   npm run db:push
+   npm run build
+   ```
+
+5. From that up-to-date checkout, install both the application and deployment
+   scheduled tasks. `DataDir` must contain the existing `jobpilot.db`, and
+   `ReleasesDir` must be a separate local directory outside the Git checkout.
+   The installer refuses to create a replacement empty database:
 
    ```powershell
    powershell -ExecutionPolicy Bypass -File .\scripts\install-production-task.ps1 `
      -ProjectRoot "C:\path\to\JobPilot" `
      -DataDir "C:\Users\<service-user>\AppData\Local\JobPilot" `
+     -ReleasesDir "C:\JobPilotReleases" `
+     -UploadDir "C:\path\to\JobPilot\data\uploads" `
      -EnableDeployment
    ```
 
@@ -70,12 +90,17 @@ proxy to the same origin, and no Cloudflare token belongs in this deployment.
 - Process status: `Get-ScheduledTask -TaskName JobPilot`
 - Deployment poller: `Get-ScheduledTask -TaskName JobPilotDeploy`
 - SQLite backups: `<DataDir>\backups\deploy-*`
+- Built releases: `<ReleasesDir>\<commit-sha>`; old releases are retained for
+  rollback and should be pruned only during a reviewed maintenance window.
 - Pause deployment: remove `.jobpilot-deploy-enabled` from the production
   checkout. This does not stop the running application.
 
 The deployment process never cleans untracked files and refuses to proceed when
-the production checkout contains tracked edits. During builds,
-`JOBPILOT_DATA_DIR` points at an isolated temporary directory; the real SQLite
-directory is used only after the running task has stopped. Release metadata is
-stored separately in the ignored `.jobpilot-release.env`; the deploy script
-never rewrites operator-managed `.env` files.
+the production checkout contains tracked edits. Dependencies and builds are
+created in a detached release worktree, so a registry or build failure cannot
+damage the running release. During builds, `JOBPILOT_DATA_DIR` points at an
+isolated temporary directory; the real SQLite directory is used only after the
+running task has stopped. Release metadata is stored separately in the ignored
+`.jobpilot-release.env`; the deploy script never rewrites operator-managed
+`.env` files. A failed SHA is blocked from automatic retry until a newer commit
+arrives or an operator removes `.jobpilot-blocked-sha` after review.
