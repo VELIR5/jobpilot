@@ -38,5 +38,15 @@ jobs:
       - name: Validate mini-program files
         run: npm run check:miniapp
 
+      - name: Test Linux deployment controller
+        run: python3 -m unittest discover -s scripts/linux -p 'test_*.py' -v
+
+      - name: Initialize isolated build database
+        env:
+          JOBPILOT_DATA_DIR: ${{ runner.temp }}/jobpilot-ci-data
+        run: npm run db:push
+
       - name: Build production application
+        env:
+          JOBPILOT_DATA_DIR: ${{ runner.temp }}/jobpilot-ci-data
         run: npm run build

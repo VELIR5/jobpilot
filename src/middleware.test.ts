@@ -12,6 +12,11 @@ function request(path: string, options: { bearer?: string; cookies?: Record<stri
 }
 
 describe("cross-client middleware", () => {
+  it("allows the release health check without browser cookies", () => {
+    const response = proxy(request("/api/health"));
+    expect(response.status).toBe(200);
+  });
+
   it("allows the mini-program session exchange without browser cookies", () => {
     const response = proxy(request("/api/miniapp/session"));
     expect(response.status).toBe(200);

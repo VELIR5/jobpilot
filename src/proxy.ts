@@ -8,9 +8,10 @@ export function proxy(request:NextRequest){
   // Mini-program clients cannot carry the browser-only gate/session cookies. The session exchange
   // endpoint is public by design, while other bearer API requests are only allowed past this cheap
   // edge presence check; currentUser() still verifies the HMAC before any protected route runs.
+  const isHealthCheck=pathname==="/api/health";
   const isMiniappSession=pathname==="/api/miniapp/session";
   const hasBearer=isApi&&/^Bearer\s+\S+$/i.test(request.headers.get("authorization")||"");
-  if(isMiniappSession||hasBearer)return NextResponse.next();
+  if(isHealthCheck||isMiniappSession||hasBearer)return NextResponse.next();
   // Layer 1 — site access gate.
   if(!request.cookies.has("jobpilot_gate")){
     if(isApi)return Response.json({error:"需要访问密码"},{status:401});

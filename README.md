@@ -126,6 +126,12 @@ worker is also available for process managers:
 npm run catalog:worker
 ```
 
+Production releases can be synchronized from a CI-tested `master` commit by a
+credential-free, systemd-managed pull task on the existing Debian Linux origin. See
+[`docs/PRODUCTION_DEPLOYMENT.md`](docs/PRODUCTION_DEPLOYMENT.md). The Cloudflare
+record remains a proxy in front of the persistent Node origin; no Cloudflare API
+or GitHub token is required by the deployment workflow.
+
 ## WeChat mini-program
 
 1. Import [`miniapp/`](miniapp/) into WeChat Developer Tools.
