@@ -28,6 +28,9 @@ Open the public web application:
 Sign in with your email, upload a resume, set your job preferences, and review
 matched vacancies before deciding whether to apply.
 
+After deployment, the public release health check is available at
+[`https://job.vcrelay.com/api/health`](https://job.vcrelay.com/api/health).
+
 ## What it does
 
 - Email-based access with signed HttpOnly browser sessions.
