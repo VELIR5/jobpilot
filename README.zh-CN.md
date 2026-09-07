@@ -24,6 +24,9 @@ JobPilot 是一个结合简历信息的岗位匹配与投递辅助工具，帮�
 
 使用邮箱登录，上传简历，填写求职偏好，然后查看匹配岗位，再决定是否投递。
 
+部署后的公网版本可以通过
+[`https://job.vcrelay.com/api/health`](https://job.vcrelay.com/api/health) 查看发布健康状态。
+
 ## 功能范围
 
 - 邮箱访问和签名 HttpOnly 浏览器会话。
