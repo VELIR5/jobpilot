@@ -12,11 +12,8 @@ data/logs/
 .env
 .env.local
 .env.production.local
-.jobpilot-release.env
-.jobpilot-deploy-enabled
-.jobpilot-current-release
-.jobpilot-blocked-sha
 .wrangler/
+__pycache__/
 playwright-report/
 test-results/
 .playwright-cli/

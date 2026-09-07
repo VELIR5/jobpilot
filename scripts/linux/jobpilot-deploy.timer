@@ -1,0 +1,11 @@
+[Unit]
+Description=Check CI-tested JobPilot master every three minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=3min
+RandomizedDelaySec=15s
+Unit=jobpilot-deploy.service
+
+[Install]
+WantedBy=timers.target
